@@ -1,0 +1,2339 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Barraca Terminal</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1117;
+        --bg2: #181c26;
+        --bg3: #1f2535;
+        --border: #2a3045;
+        --border2: #353d52;
+        --text: #e8eaf0;
+        --text2: #8892a4;
+        --text3: #545e72;
+        --green: #22c55e;
+        --green-dim: #14532d;
+        --green-bg: #0d2818;
+        --red: #f87171;
+        --red-dim: #7f1d1d;
+        --red-bg: #2d0d0d;
+        --amber: #fbbf24;
+        --amber-bg: #2d1f06;
+        --blue: #60a5fa;
+        --blue-bg: #0d1f3c;
+        --accent: #f59e0b;
+        --radius: 8px;
+        --font: "IBM Plex Sans", sans-serif;
+        --mono: "IBM Plex Mono", monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+
+      /* LAYOUT */
+      .app {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 0 0 80px;
+        min-height: 100vh;
+      }
+
+      /* NAV */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .topbar-title {
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: -0.3px;
+      }
+      .topbar-sub {
+        font-size: 11px;
+        color: var(--text3);
+        margin-top: 1px;
+      }
+      .bottomnav {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 520px;
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        display: flex;
+        z-index: 100;
+      }
+      .bottomnav button {
+        flex: 1;
+        padding: 10px 4px 8px;
+        background: none;
+        border: none;
+        color: var(--text3);
+        cursor: pointer;
+        font-size: 10px;
+        font-family: var(--font);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        transition: color 0.15s;
+      }
+      .bottomnav button.active {
+        color: var(--accent);
+      }
+      .bottomnav button svg {
+        width: 20px;
+        height: 20px;
+      }
+      .page {
+        display: none;
+        padding: 14px 14px 0;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* CARDS */
+      .card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .card-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+      }
+      .section-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin: 14px 0 8px;
+      }
+
+      /* METRICS */
+      .metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .metric {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px;
+      }
+      .metric-label {
+        font-size: 11px;
+        color: var(--text3);
+        margin-bottom: 4px;
+      }
+      .metric-value {
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .metric-value.green {
+        color: var(--green);
+      }
+      .metric-value.amber {
+        color: var(--amber);
+      }
+
+      /* INPUTS */
+      .field {
+        margin-bottom: 10px;
+      }
+      .field label {
+        display: block;
+        font-size: 11px;
+        color: var(--text2);
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      .field input,
+      .field select {
+        width: 100%;
+        padding: 9px 11px;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .field input:focus,
+      .field select:focus {
+        border-color: var(--accent);
+      }
+      .inp {
+        padding: 4px 6px;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
+        text-align: center;
+        outline: none;
+        width: 46px;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .inp:focus {
+        border-color: var(--accent);
+      }
+      .inp.entrada {
+        border-color: var(--blue);
+        background: var(--blue-bg);
+      }
+      .inp.error {
+        border-color: var(--red) !important;
+        background: var(--red-bg) !important;
+      }
+
+      /* BUTTONS */
+      .btn {
+        padding: 9px 16px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border2);
+        background: var(--bg3);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 13px;
+        font-family: var(--font);
+        font-weight: 500;
+        transition: all 0.15s;
+      }
+      .btn:hover {
+        border-color: var(--text2);
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #000;
+        border-color: var(--accent);
+        font-weight: 600;
+      }
+      .btn-primary:hover {
+        background: #f59e0b;
+      }
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+      .btn-danger {
+        background: var(--red-bg);
+        color: var(--red);
+        border-color: var(--red-dim);
+      }
+      .btn-full {
+        width: 100%;
+      }
+      .btn-ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--text2);
+      }
+
+      /* TABLE */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th {
+        text-align: left;
+        color: var(--text3);
+        font-weight: 500;
+        padding: 5px 3px;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      td {
+        padding: 5px 3px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
+      .td-nome {
+        max-width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .td-vnd {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .td-vnd.pos {
+        color: var(--green);
+      }
+      .td-vnd.zero {
+        color: var(--text3);
+      }
+
+      /* BADGES */
+      .badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-family: var(--mono);
+      }
+      .badge-ok {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid var(--green-dim);
+      }
+      .badge-err {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1px solid var(--red-dim);
+      }
+      .badge-warn {
+        background: var(--amber-bg);
+        color: var(--amber);
+        border: 1px solid #713f12;
+      }
+      .badge-blue {
+        background: var(--blue-bg);
+        color: var(--blue);
+        border: 1px solid #1e3a5f;
+      }
+
+      /* ALERTS */
+      .alert {
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        font-size: 13px;
+        margin: 8px 0;
+      }
+      .alert-ok {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid var(--green-dim);
+      }
+      .alert-err {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1px solid var(--red-dim);
+      }
+      .alert-warn {
+        background: var(--amber-bg);
+        color: var(--amber);
+        border: 1px solid #713f12;
+      }
+      .alert-info {
+        background: var(--blue-bg);
+        color: var(--blue);
+        border: 1px solid #1e3a5f;
+      }
+
+      /* SHIFT SELECTOR */
+      .shift-bar {
+        display: flex;
+        gap: 6px;
+      }
+      .shift-btn {
+        flex: 1;
+        padding: 10px 4px;
+        text-align: center;
+        border-radius: var(--radius);
+        border: 1px solid var(--border2);
+        cursor: pointer;
+        font-size: 12px;
+        background: var(--bg3);
+        color: var(--text3);
+        transition: all 0.15s;
+      }
+      .shift-btn.active {
+        border-color: var(--accent);
+        background: #2d1f06;
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      /* PROD TABS */
+      .prod-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .prod-tab {
+        flex-shrink: 0;
+        padding: 5px 12px;
+        font-size: 12px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text3);
+        cursor: pointer;
+        font-family: var(--font);
+        transition: all 0.15s;
+      }
+      .prod-tab.active {
+        background: var(--bg3);
+        color: var(--text);
+        border-color: var(--border2);
+      }
+
+      /* LOGIN */
+      .login-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: var(--bg);
+      }
+      .login-box {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px 24px;
+        width: 100%;
+        max-width: 340px;
+      }
+      .login-logo {
+        font-family: var(--mono);
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+      .login-sub {
+        font-size: 12px;
+        color: var(--text3);
+        margin-bottom: 24px;
+      }
+
+      /* CONSUMO MODAL */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        padding: 16px;
+      }
+      .modal-box {
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 12px;
+        padding: 20px;
+        width: 100%;
+        max-width: 380px;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+
+      /* ROW HELPERS */
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .flex {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 12px 0;
+      }
+
+      /* PONTO */
+      .ponto-row {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        margin-bottom: 8px;
+      }
+
+      /* CONSUMO HIGHLIGHT */
+      .consumo-box {
+        background: #1a1a08;
+        border: 1px solid #3d3000;
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        margin-top: 8px;
+      }
+      .consumo-label {
+        font-size: 11px;
+        color: var(--amber);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      /* SCROLLBAR */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 4px;
+      }
+
+      /* DATE INPUT fix */
+      input[type="date"],
+      input[type="time"] {
+        color-scheme: dark;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // ═══════════════════════════════════════════════════
+      // STATE & STORAGE
+      // ═══════════════════════════════════════════════════
+      const KEY = "barraca_v5";
+      const OWNER = { user: "dono", pass: "barraca2024" };
+
+      let S = loadState();
+      let session = { user: null, role: null, funcId: null };
+
+      function loadState() {
+        try {
+          const s = localStorage.getItem(KEY);
+          if (s) return JSON.parse(s);
+        } catch (e) {}
+        return makeDefaultState();
+      }
+      function saveState() {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(S));
+        } catch (e) {}
+      }
+      function makeDefaultState() {
+        return {
+          turnoAtivo: null,
+          historico: [],
+          precos: makePrecos(),
+          bebidas: makeBebidas(),
+          funcionarios: [],
+          pontos: [],
+        };
+      }
+      function makePrecos() {
+        return {
+          pastelComum: 14,
+          carneSeca: 16,
+          espComum: 20,
+          espCarneSeca: 22,
+          casquinhaFrita: 7,
+          c300: 7,
+          c400: 8,
+          c500: 9,
+          g500: 11,
+          g1l: 18,
+          agua: 4,
+          aguaGas: 5,
+          guaraviton: 7,
+          gelo: 13,
+        };
+      }
+      function makeBebidas() {
+        return [
+          { id: 1, nome: "Coca-cola", preco: 7 },
+          { id: 2, nome: "Fanta Laranja", preco: 7 },
+          { id: 3, nome: "Fanta Uva", preco: 7 },
+          { id: 4, nome: "Guaraná", preco: 7 },
+          { id: 5, nome: "Refri Limão", preco: 7 },
+          { id: 6, nome: "Refri Zero", preco: 7 },
+          { id: 7, nome: "Itubaina", preco: 7 },
+          { id: 8, nome: "Água", preco: 4 },
+          { id: 9, nome: "Água c/ Gás", preco: 5 },
+          { id: 10, nome: "Guaraviton", preco: 7 },
+        ];
+      }
+
+      // ═══════════════════════════════════════════════════
+      // PRODUCT DEFINITIONS
+      // ═══════════════════════════════════════════════════
+      const PC_NOMES = [
+        "Carne c/ queijo",
+        "Carne",
+        "Frango c/ catupiry",
+        "Frango c/ queijo",
+        "Carioca",
+        "Pizza",
+        "Palmito",
+        "Queijo",
+        "4 Queijos",
+        "Bauru",
+        "Calabresa",
+        "Portuguesa",
+      ];
+      const PE_DEF = [
+        { nome: "Carne Seca", grp: "carneSeca" },
+        { nome: "Esp. Carne", grp: "espComum" },
+        { nome: "Esp. Calabresa", grp: "espComum" },
+        { nome: "Esp. Frango", grp: "espComum" },
+        { nome: "Esp. Carne Seca", grp: "espCarneSeca" },
+      ];
+      const CALDO_DEF = [
+        { nome: "Copo 300ml", pk: "c300" },
+        { nome: "Copo 400ml", pk: "c400" },
+        { nome: "Copo 500ml", pk: "c500" },
+        { nome: "Garrafa 500ml", pk: "g500" },
+        { nome: "Garrafa 1L", pk: "g1l" },
+      ];
+
+      // ═══════════════════════════════════════════════════
+      // HELPERS
+      // ═══════════════════════════════════════════════════
+      function fmt(v) {
+        return "R$ " + (v || 0).toFixed(2).replace(".", ",");
+      }
+      function fmtN(v) {
+        return (v || 0).toFixed(2).replace(".", ",");
+      }
+      function uid() {
+        return Date.now() + Math.random().toString(36).slice(2, 7);
+      }
+
+      function makeItem(nome, entrada = 0, extra = {}) {
+        return {
+          nome,
+          entrada,
+          chegada: null,
+          sobra: null,
+          consumo: null,
+          ...extra,
+        };
+      }
+
+      // Calcula quantas unidades foram VENDIDAS
+      function vendeu(item) {
+        const tot = (item.entrada || 0) + (item.chegada || 0);
+        const cons = item.consumo || 0;
+        const sob = item.sobra || 0;
+        return Math.max(0, tot - sob - cons);
+      }
+
+      // Calcula sobra real para próximo turno
+      function sobraReal(item) {
+        return Math.max(0, item.sobra || 0);
+      }
+
+      // Calcula vendas esperadas em R$
+      function calcEsperado(turno) {
+        if (!turno) return 0;
+        const p = S.precos;
+        let total = 0;
+        (turno.pastelComum || []).forEach((i) => {
+          total += vendeu(i) * p.pastelComum;
+        });
+        (turno.pastelEsp || []).forEach((i) => {
+          const pr =
+            i.grp === "carneSeca"
+              ? p.carneSeca
+              : i.grp === "espCarneSeca"
+                ? p.espCarneSeca
+                : p.espComum;
+          total += vendeu(i) * pr;
+        });
+        (turno.casquinha || []).forEach((i) => {
+          if (i.preco > 0) total += vendeu(i) * i.preco;
+        });
+        const cp = [p.c300, p.c400, p.c500, p.g500, p.g1l];
+        (turno.caldo || []).forEach((i, idx) => {
+          total += vendeu(i) * cp[idx];
+        });
+        (turno.bebidas || []).forEach((i) => {
+          total += vendeu(i) * i.preco;
+        });
+        // Gelo usa campo vendeu direto
+        const g = turno.gelo || {};
+        const gVnd = Math.max(
+          0,
+          (g.entrada || 0) +
+            (g.chegada || 0) -
+            (g.sobra || 0) -
+            (g.consumo || 0),
+        );
+        total += gVnd * p.gelo;
+        return total;
+      }
+
+      function calcConsumoValor(turno) {
+        if (!turno) return 0;
+        const p = S.precos;
+        let total = 0;
+        const half = (pr, nome) =>
+          nome.toLowerCase().includes("água") &&
+          !nome.toLowerCase().includes("gás")
+            ? 0
+            : pr / 2;
+
+        (turno.pastelComum || []).forEach((i) => {
+          total += ((i.consumo || 0) * p.pastelComum) / 2;
+        });
+        (turno.pastelEsp || []).forEach((i) => {
+          const pr =
+            i.grp === "carneSeca"
+              ? p.carneSeca
+              : i.grp === "espCarneSeca"
+                ? p.espCarneSeca
+                : p.espComum;
+          total += ((i.consumo || 0) * pr) / 2;
+        });
+        (turno.casquinha || []).forEach((i) => {
+          if (i.preco > 0) total += ((i.consumo || 0) * i.preco) / 2;
+        });
+        const cp = [p.c300, p.c400, p.c500, p.g500, p.g1l];
+        (turno.caldo || []).forEach((i, idx) => {
+          total += ((i.consumo || 0) * cp[idx]) / 2;
+        });
+        (turno.bebidas || []).forEach((i) => {
+          total += (i.consumo || 0) * half(i.preco, i.nome);
+        });
+        const g = turno.gelo || {};
+        total += ((g.consumo || 0) * p.gelo) / 2;
+        return total;
+      }
+
+      // Busca sobras do turno anterior para popular entrada
+      function getPrevSobras(data, turno) {
+        const order = ["Manhã", "Tarde", "Noite"];
+        const idx = order.indexOf(turno);
+        let prev = null;
+        if (idx === 0) {
+          // Manhã pega sobra da Noite do dia anterior
+          const d = new Date(data + "T12:00:00");
+          d.setDate(d.getDate() - 1);
+          const prevDate = d.toISOString().slice(0, 10);
+          prev = [...S.historico]
+            .reverse()
+            .find(
+              (h) =>
+                h.data === prevDate &&
+                h.turno === "Noite" &&
+                h.status === "fechado",
+            );
+        } else {
+          const prevTurno = order[idx - 1];
+          prev = [...S.historico]
+            .reverse()
+            .find(
+              (h) =>
+                h.data === data &&
+                h.turno === prevTurno &&
+                h.status === "fechado",
+            );
+        }
+        if (!prev) return null;
+        return {
+          pastelComum: (prev.pastelComum || []).map((i) => sobraReal(i)),
+          pastelEsp: (prev.pastelEsp || []).map((i) => sobraReal(i)),
+          casquinha: (prev.casquinha || []).map((i) => sobraReal(i)),
+          caldo: (prev.caldo || []).map((i) => sobraReal(i)),
+          fardoSobra: sobraReal(prev.fardo || {}),
+          bebidas: (prev.bebidas || []).map((i) => sobraReal(i)),
+          geloSobra: sobraReal(prev.gelo || {}),
+        };
+      }
+
+      function makeTurno(data, responsavel, turno, caixaInicial) {
+        const prev = getPrevSobras(data, turno);
+        const getE = (arr, i) => (arr ? arr[i] || 0 : 0);
+        return {
+          id: uid(),
+          data,
+          responsavel,
+          turno,
+          caixaInicial,
+          pastelComum: PC_NOMES.map((n, i) =>
+            makeItem(n, getE(prev?.pastelComum, i)),
+          ),
+          pastelEsp: PE_DEF.map((d, i) =>
+            makeItem(d.nome, getE(prev?.pastelEsp, i), { grp: d.grp }),
+          ),
+          casquinha: [
+            makeItem("Casquinha crua", getE(prev?.casquinha, 0), { preco: 0 }),
+            makeItem("Casquinha frita", getE(prev?.casquinha, 1), { preco: 7 }),
+          ],
+          caldo: CALDO_DEF.map((d, i) =>
+            makeItem(d.nome, getE(prev?.caldo, i), { pk: d.pk }),
+          ),
+          fardo: makeItem("Fardo de cana", prev?.fardoSobra || 0),
+          bebidas: S.bebidas.map((b, i) =>
+            makeItem(b.nome, getE(prev?.bebidas, i), {
+              preco: b.preco,
+              bebidasId: b.id,
+            }),
+          ),
+          gelo: makeItem("Gelo", prev?.geloSobra || 0),
+          fc: {
+            dinheiro: null,
+            pix: null,
+            maq: null,
+            voucher: null,
+            caixaFim: null,
+          },
+          status: "aberto",
+        };
+      }
+
+      // ═══════════════════════════════════════════════════
+      // RENDER ENGINE
+      // ═══════════════════════════════════════════════════
+      const root = document.getElementById("root");
+
+      function render(html) {
+        root.innerHTML = html;
+      }
+
+      // ═══════════════════════════════════════════════════
+      // LOGIN
+      // ═══════════════════════════════════════════════════
+      function renderLogin() {
+        root.innerHTML = `
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">🫘 Barraca Terminal</div>
+      <div class="login-sub">Sistema de controle de vendas</div>
+      <div class="field"><label>Usuário</label><input id="lu" type="text" autocomplete="username" placeholder="seu usuário"></div>
+      <div class="field"><label>Senha</label><input id="lp" type="password" autocomplete="current-password" placeholder="••••••"></div>
+      <div id="lerr" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none">Usuário ou senha incorretos.</div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar →</button>
+    </div>
+  </div>`;
+        document.getElementById("lp").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") doLogin();
+        });
+      }
+
+      function doLogin() {
+        const u = document.getElementById("lu").value.trim().toLowerCase();
+        const p = document.getElementById("lp").value;
+        if (u === OWNER.user && p === OWNER.pass) {
+          session = { user: "Dono", role: "owner", funcId: null };
+          renderOwnerApp();
+          return;
+        }
+        const func = S.funcionarios.find(
+          (f) => f.usuario === u && f.senha === p,
+        );
+        if (func) {
+          session = { user: func.nome, role: "func", funcId: func.id };
+          renderFuncApp();
+          return;
+        }
+        document.getElementById("lerr").style.display = "";
+      }
+
+      function doLogout() {
+        session = { user: null, role: null, funcId: null };
+        renderLogin();
+      }
+
+      // ═══════════════════════════════════════════════════
+      // SHARED TOPBAR
+      // ═══════════════════════════════════════════════════
+      function topbarHTML(sub) {
+        return `<div class="topbar">
+    <div>
+      <div class="topbar-title">🫘 Barraca Terminal</div>
+      <div class="topbar-sub">${sub}</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sair</button>
+  </div>`;
+      }
+
+      // ═══════════════════════════════════════════════════
+      // OWNER APP
+      // ═══════════════════════════════════════════════════
+      let ownerPage = "dashboard";
+
+      function renderOwnerApp() {
+        const today = new Date().toISOString().slice(0, 10);
+        root.innerHTML = `
+  ${topbarHTML("Painel do Dono")}
+  <div id="page-dashboard" class="page"></div>
+  <div id="page-funcionarios" class="page"></div>
+  <div id="page-produtos" class="page"></div>
+  <div id="page-historico" class="page"></div>
+  <nav class="bottomnav">
+    <button onclick="ownerNav('dashboard')" id="onav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button onclick="ownerNav('funcionarios')" id="onav-funcionarios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Funcionários
+    </button>
+    <button onclick="ownerNav('produtos')" id="onav-produtos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Produtos
+    </button>
+    <button onclick="ownerNav('historico')" id="onav-historico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Histórico
+    </button>
+  </nav>`;
+        ownerNav("dashboard");
+      }
+
+      function ownerNav(page) {
+        ownerPage = page;
+        document
+          .querySelectorAll(".bottomnav button")
+          .forEach((b) => b.classList.remove("active"));
+        const btn = document.getElementById("onav-" + page);
+        if (btn) btn.classList.add("active");
+        ["dashboard", "funcionarios", "produtos", "historico"].forEach((p) => {
+          const el = document.getElementById("page-" + p);
+          if (el) el.className = "page" + (p === page ? " active" : "");
+        });
+        if (page === "dashboard") renderDashboard();
+        if (page === "funcionarios") renderFuncionarios();
+        if (page === "produtos") renderProdutos();
+        if (page === "historico") renderHistorico();
+      }
+
+      // ── DASHBOARD ──
+      function renderDashboard() {
+        const div = document.getElementById("page-dashboard");
+        if (!div) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const m1 = today.slice(0, 7) + "-01";
+        div.innerHTML = `
+  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:flex-end">
+    <div class="field" style="margin:0;flex:1"><label>De</label><input type="date" id="dash-de" value="${m1}"></div>
+    <div class="field" style="margin:0;flex:1"><label>Até</label><input type="date" id="dash-ate" value="${today}"></div>
+    <button class="btn btn-sm" onclick="refreshDash()" style="margin-bottom:0">Ver</button>
+  </div>
+  <div class="metrics" id="dash-metrics"></div>
+  <div class="card" id="dash-turnos-card"><div class="card-title">Turnos recentes</div><div id="dash-turnos"></div></div>
+  <div class="card" id="dash-top-card"><div class="card-title">Mais vendidos</div><div id="dash-top"></div></div>`;
+        refreshDash();
+      }
+
+      function refreshDash() {
+        const de = document.getElementById("dash-de")?.value;
+        const ate = document.getElementById("dash-ate")?.value;
+        let hist = S.historico.filter((h) => h.status === "fechado");
+        if (de) hist = hist.filter((h) => h.data >= de);
+        if (ate) hist = hist.filter((h) => h.data <= ate);
+        const totalArr = hist.reduce((s, h) => s + (h.totalArrecadado || 0), 0);
+        const totalEsp = hist.reduce((s, h) => s + (h.totalEsperado || 0), 0);
+        const totalPasteis = hist.reduce((s, h) => {
+          return (
+            s +
+            [...(h.pastelComum || []), ...(h.pastelEsp || [])].reduce(
+              (a, i) => a + vendeu(i),
+              0,
+            )
+          );
+        }, 0);
+        const mEl = document.getElementById("dash-metrics");
+        if (mEl)
+          mEl.innerHTML = `
+    <div class="metric"><div class="metric-label">Total arrecadado</div><div class="metric-value green">${fmt(totalArr)}</div></div>
+    <div class="metric"><div class="metric-label">Turnos fechados</div><div class="metric-value">${hist.length}</div></div>
+    <div class="metric"><div class="metric-label">Pastéis vendidos</div><div class="metric-value amber">${totalPasteis}</div></div>
+    <div class="metric"><div class="metric-label">Média por turno</div><div class="metric-value">${fmt(hist.length ? totalArr / hist.length : 0)}</div></div>`;
+        const icons = { Manhã: "☀️", Tarde: "🌤️", Noite: "🌙" };
+        const tDiv = document.getElementById("dash-turnos");
+        if (tDiv)
+          tDiv.innerHTML =
+            hist.length === 0
+              ? '<p style="color:var(--text3);font-size:13px">Nenhum turno no período.</p>'
+              : hist
+                  .slice()
+                  .reverse()
+                  .slice(0, 10)
+                  .map((h) => {
+                    const diff =
+                      (h.totalArrecadado || 0) - (h.totalEsperado || 0);
+                    const badge =
+                      Math.abs(diff) < 0.5
+                        ? "badge-ok"
+                        : diff > 0
+                          ? "badge-warn"
+                          : "badge-err";
+                    const bTxt =
+                      Math.abs(diff) < 0.5
+                        ? "OK"
+                        : diff > 0
+                          ? `+${fmt(diff)}`
+                          : fmt(diff);
+                    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:13px;font-weight:500">${icons[h.turno] || ""} ${h.turno} <span style="color:var(--text3);font-weight:400;font-size:12px">· ${h.data} · ${h.responsavel}</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:13px;color:var(--green)">${fmt(h.totalArrecadado)}</span>
+            <span class="badge ${badge}">${bTxt}</span>
+          </div>
+        </div>`;
+                  })
+                  .join("");
+        const prodMap = {};
+        hist.forEach((h) => {
+          [...(h.pastelComum || []), ...(h.pastelEsp || [])].forEach((i) => {
+            const v = vendeu(i);
+            if (v > 0) prodMap[i.nome] = (prodMap[i.nome] || 0) + v;
+          });
+        });
+        const top = Object.entries(prodMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8);
+        const pDiv = document.getElementById("dash-top");
+        if (pDiv)
+          pDiv.innerHTML =
+            top.length === 0
+              ? '<p style="color:var(--text3);font-size:13px">—</p>'
+              : top
+                  .map(
+                    ([nome, qtd], i) => `
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px;color:var(--text2)">${i + 1}. ${nome}</span>
+          <span style="font-family:var(--mono);font-size:12px;font-weight:600">${qtd} un</span>
+        </div>`,
+                  )
+                  .join("");
+      }
+
+      // ── FUNCIONÁRIOS (DONO) ──
+      function renderFuncionarios() {
+        const div = document.getElementById("page-funcionarios");
+        if (!div) return;
+        div.innerHTML = `
+  <div class="card">
+    <div class="row"><div class="card-title" style="margin:0">Funcionários</div>
+      <button class="btn btn-sm" onclick="toggleAddFunc()">+ Novo</button>
+    </div>
+    <div id="add-func-form" style="display:none;margin-top:12px;background:var(--bg3);border-radius:var(--radius);padding:12px">
+      <div class="field"><label>Nome completo</label><input type="text" id="nf-nome" placeholder="Nome"></div>
+      <div class="field"><label>Usuário (login)</label><input type="text" id="nf-user" placeholder="ex: joao"></div>
+      <div class="field"><label>Senha</label><input type="password" id="nf-pass" placeholder="senha"></div>
+      <div class="field"><label>Valor/hora (R$)</label><input type="number" id="nf-hora" placeholder="ex: 15"></div>
+      <button class="btn btn-sm btn-primary" onclick="addFunc()">Cadastrar</button>
+    </div>
+    <div id="func-lista" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Pontos da semana</div>
+    <div class="field"><label>Semana (segunda-feira)</label><input type="date" id="fs-semana" value="${new Date().toISOString().slice(0, 10)}"></div>
+    <button class="btn btn-sm" onclick="calcSemanal()" style="margin-bottom:12px">Calcular fechamento</button>
+    <div id="fs-resultado"></div>
+  </div>`;
+        renderFuncLista();
+      }
+
+      function toggleAddFunc() {
+        const f = document.getElementById("add-func-form");
+        if (f) f.style.display = f.style.display === "none" ? "" : "none";
+      }
+
+      function addFunc() {
+        const nome = document.getElementById("nf-nome").value.trim();
+        const user = document
+          .getElementById("nf-user")
+          .value.trim()
+          .toLowerCase();
+        const pass = document.getElementById("nf-pass").value;
+        const hora = parseFloat(document.getElementById("nf-hora").value) || 15;
+        if (!nome || !user || !pass) {
+          alert("Preencha nome, usuário e senha!");
+          return;
+        }
+        if (S.funcionarios.find((f) => f.usuario === user)) {
+          alert("Usuário já existe!");
+          return;
+        }
+        S.funcionarios.push({
+          id: uid(),
+          nome,
+          usuario: user,
+          senha: pass,
+          valorHora: hora,
+        });
+        saveState();
+        document.getElementById("add-func-form").style.display = "none";
+        renderFuncLista();
+      }
+
+      function removeFunc(id) {
+        if (!confirm("Remover funcionário?")) return;
+        S.funcionarios = S.funcionarios.filter((f) => f.id !== id);
+        saveState();
+        renderFuncLista();
+      }
+
+      function renderFuncLista() {
+        const div = document.getElementById("func-lista");
+        if (!div) return;
+        if (!S.funcionarios.length) {
+          div.innerHTML =
+            '<p style="color:var(--text3);font-size:13px">Nenhum funcionário cadastrado.</p>';
+          return;
+        }
+        div.innerHTML = S.funcionarios
+          .map(
+            (f) => `
+    <div class="ponto-row" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:500">${f.nome}</div>
+        <div style="font-size:11px;color:var(--text3)">@${f.usuario} · R$ ${f.valorHora || 15}/h</div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="removeFunc('${f.id}')">Remover</button>
+    </div>`,
+          )
+          .join("");
+      }
+
+      function calcSemanal() {
+        const semana = document.getElementById("fs-semana").value;
+        if (!semana) {
+          alert("Informe a semana!");
+          return;
+        }
+        const pontos = (S.pontos || []).filter((p) => p.semana === semana);
+        const div = document.getElementById("fs-resultado");
+        if (!pontos.length) {
+          div.innerHTML =
+            '<p style="color:var(--text3);font-size:13px">Nenhum ponto nesta semana.</p>';
+          return;
+        }
+        const grupos = {};
+        pontos.forEach((p) => {
+          if (!grupos[p.funcId])
+            grupos[p.funcId] = { hs: 0, trans: 0, ref: 0, consumo: 0, dias: 0 };
+          grupos[p.funcId].hs += p.hs || 0;
+          grupos[p.funcId].trans += (p.transIda || 0) + (p.transVolta || 0);
+          grupos[p.funcId].ref += p.refeicao || 0;
+          grupos[p.funcId].consumo += p.consumo || 0;
+          grupos[p.funcId].dias++;
+        });
+        div.innerHTML = Object.entries(grupos)
+          .map(([fid, g]) => {
+            const func = S.funcionarios.find((f) => f.id === fid);
+            const rate = func?.valorHora || 15;
+            const bruto = g.hs * rate;
+            const descs = g.trans + g.ref + g.consumo;
+            const liq = Math.max(0, bruto - descs);
+            return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--accent)">${func ? func.nome : "Func #" + fid} <span style="font-weight:400;color:var(--text3);font-size:11px">${g.dias} dia(s)</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:12px">
+        <span style="color:var(--text3)">Horas</span><span style="font-family:var(--mono)">${g.hs.toFixed(1)}h</span>
+        <span style="color:var(--text3)">Bruto (${rate}/h)</span><span style="font-family:var(--mono)">${fmt(bruto)}</span>
+        <span style="color:var(--text3)">Transporte</span><span style="font-family:var(--mono);color:var(--red)">- ${fmt(g.trans)}</span>
+        <span style="color:var(--text3)">Refeição</span><span style="font-family:var(--mono);color:var(--red)">- ${fmt(g.ref)}</span>
+        <span style="color:var(--text3)">Consumo</span><span style="font-family:var(--mono);color:var(--amber)">- ${fmt(g.consumo)}</span>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600">Líquido a pagar</span>
+        <span style="font-family:var(--mono);font-size:17px;font-weight:600;color:var(--green)">${fmt(liq)}</span>
+      </div>
+    </div>`;
+          })
+          .join("");
+      }
+
+      // ── PRODUTOS / PREÇOS ──
+      function renderProdutos() {
+        const div = document.getElementById("page-produtos");
+        if (!div) return;
+        const p = S.precos;
+        const mkRow = (label, key, val) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--text2)">${label}</span>
+      <div class="flex"><span style="font-size:12px;color:var(--text3)">R$</span>
+        <input type="number" class="inp" style="width:58px" id="pr-${key}" value="${val}" data-key="${key}">
+      </div>
+    </div>`;
+        div.innerHTML = `
+  <div class="card">
+    <div class="card-title">Preços dos produtos</div>
+    <div class="section-label">Pastéis</div>
+    ${mkRow("Comuns (todos)", "pastelComum", p.pastelComum)}
+    ${mkRow("Carne Seca", "carneSeca", p.carneSeca)}
+    ${mkRow("Esp. Carne / Calabresa / Frango", "espComum", p.espComum)}
+    ${mkRow("Esp. Carne Seca", "espCarneSeca", p.espCarneSeca)}
+    ${mkRow("Casquinha frita", "casquinhaFrita", p.casquinhaFrita)}
+    <div class="section-label">Caldo de cana</div>
+    ${mkRow("Copo 300ml", "c300", p.c300)}${mkRow("Copo 400ml", "c400", p.c400)}
+    ${mkRow("Copo 500ml", "c500", p.c500)}${mkRow("Garrafa 500ml", "g500", p.g500)}${mkRow("Garrafa 1L", "g1l", p.g1l)}
+    <div class="section-label">Outros</div>
+    ${mkRow("Água", "agua", p.agua)}${mkRow("Água c/ Gás", "aguaGas", p.aguaGas)}
+    ${mkRow("Guaraviton", "guaraviton", p.guaraviton)}${mkRow("Gelo (pacote)", "gelo", p.gelo)}
+    <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarPrecos()">Salvar preços</button>
+  </div>
+  <div class="card">
+    <div class="row"><div class="card-title" style="margin:0">Bebidas</div>
+      <button class="btn btn-sm" onclick="toggleAddBebEdit()">+ Bebida</button>
+    </div>
+    <div id="add-beb-edit-form" style="display:none;margin-top:10px;background:var(--bg3);border-radius:var(--radius);padding:10px">
+      <div class="flex">
+        <input type="text" id="ebe-nome" placeholder="Nome" style="flex:1;padding:7px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:13px">
+        <input type="number" id="ebe-preco" placeholder="R$" style="width:65px;padding:7px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:13px">
+        <button class="btn btn-sm btn-primary" onclick="addBebEdit()">+</button>
+      </div>
+    </div>
+    <div id="beb-edit-lista" style="margin-top:10px"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="salvarPrecosBebidas()">Salvar bebidas</button>
+  </div>`;
+        renderBebEditLista();
+      }
+
+      function salvarPrecos() {
+        document.querySelectorAll("[data-key]").forEach((inp) => {
+          S.precos[inp.dataset.key] = parseFloat(inp.value) || 0;
+        });
+        saveState();
+        alert("Preços salvos!");
+      }
+
+      function toggleAddBebEdit() {
+        const f = document.getElementById("add-beb-edit-form");
+        if (f) f.style.display = f.style.display === "none" ? "" : "none";
+      }
+
+      function addBebEdit() {
+        const nome = document.getElementById("ebe-nome").value.trim();
+        const preco =
+          parseFloat(document.getElementById("ebe-preco").value) || 7;
+        if (!nome) return;
+        S.bebidas.push({ id: uid(), nome, preco });
+        saveState();
+        document.getElementById("ebe-nome").value = "";
+        document.getElementById("ebe-preco").value = "";
+        renderBebEditLista();
+      }
+
+      function removeBebEdit(id) {
+        if (!confirm("Remover bebida?")) return;
+        S.bebidas = S.bebidas.filter((b) => b.id !== id);
+        saveState();
+        renderBebEditLista();
+      }
+
+      function renderBebEditLista() {
+        const div = document.getElementById("beb-edit-lista");
+        if (!div) return;
+        div.innerHTML = S.bebidas
+          .map(
+            (b) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--text2)">${b.nome}</span>
+      <div class="flex">
+        <span style="font-size:12px;color:var(--text3)">R$</span>
+        <input type="number" class="inp" style="width:55px" id="bep-${b.id}" value="${b.preco}" data-bid="${b.id}">
+        <button class="btn btn-sm btn-danger" onclick="removeBebEdit('${b.id}')">✕</button>
+      </div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      function salvarPrecosBebidas() {
+        document.querySelectorAll("[data-bid]").forEach((inp) => {
+          const b = S.bebidas.find((b) => b.id === inp.dataset.bid);
+          if (b) b.preco = parseFloat(inp.value) || b.preco;
+        });
+        saveState();
+        alert("Bebidas salvas!");
+      }
+
+      // ── HISTÓRICO ──
+      function renderHistorico() {
+        const div = document.getElementById("page-historico");
+        if (!div) return;
+        const hist = [...S.historico].reverse();
+        const icons = { Manhã: "☀️", Tarde: "🌤️", Noite: "🌙" };
+        if (!hist.length) {
+          div.innerHTML =
+            '<div class="card"><p style="color:var(--text3);font-size:13px;text-align:center">Nenhum turno registrado.</p></div>';
+          return;
+        }
+        div.innerHTML = hist
+          .map((h) => {
+            const diff = (h.totalArrecadado || 0) - (h.totalEsperado || 0);
+            const abs = Math.abs(diff);
+            const badge =
+              abs < 0.5 ? "badge-ok" : diff > 0 ? "badge-warn" : "badge-err";
+            const bTxt =
+              abs < 0.5
+                ? "OK"
+                : diff > 0
+                  ? `Sobra ${fmt(diff)}`
+                  : `Falta ${fmt(abs)}`;
+            const consumoV = h.totalConsumo || 0;
+            return `<div class="card">
+      <div class="row" style="margin-bottom:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600">${icons[h.turno] || ""} ${h.turno} — ${h.data}</div>
+          <div style="font-size:12px;color:var(--text3)">${h.responsavel}</div>
+        </div>
+        <span class="badge ${badge}">${bTxt}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+        <span style="color:var(--text3)">Arrecadado</span><span style="font-family:var(--mono);color:var(--green)">${fmt(h.totalArrecadado)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+        <span style="color:var(--text3)">Esperado (vendas)</span><span style="font-family:var(--mono)">${fmt(h.totalEsperado)}</span>
+      </div>
+      ${
+        consumoV > 0
+          ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+        <span style="color:var(--amber)">Consumo funcionários</span><span style="font-family:var(--mono);color:var(--amber)">- ${fmt(consumoV)}</span>
+      </div>`
+          : ""
+      }
+    </div>`;
+          })
+          .join("");
+      }
+
+      // ═══════════════════════════════════════════════════
+      // FUNC APP
+      // ═══════════════════════════════════════════════════
+      let funcPage = "turno";
+      let funcProdTab = "pastel";
+      let T = null; // turno ativo local
+
+      function renderFuncApp() {
+        T = S.turnoAtivo ? JSON.parse(JSON.stringify(S.turnoAtivo)) : null;
+        root.innerHTML = `
+  ${topbarHTML(session.user + " — Funcionário")}
+  <div id="fpage-turno" class="page"></div>
+  <div id="fpage-ponto" class="page"></div>
+  <nav class="bottomnav">
+    <button onclick="funcNav('turno')" id="fnav-turno">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Turno
+    </button>
+    <button onclick="funcNav('ponto')" id="fnav-ponto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Meu Ponto
+    </button>
+  </nav>`;
+        funcNav("turno");
+      }
+
+      function funcNav(page) {
+        funcPage = page;
+        document
+          .querySelectorAll(".bottomnav button")
+          .forEach((b) => b.classList.remove("active"));
+        const btn = document.getElementById("fnav-" + page);
+        if (btn) btn.classList.add("active");
+        ["turno", "ponto"].forEach((p) => {
+          const el = document.getElementById("fpage-" + p);
+          if (el) el.className = "page" + (p === page ? " active" : "");
+        });
+        if (page === "turno") renderFuncTurno();
+        if (page === "ponto") renderFuncPonto();
+      }
+
+      // ── TURNO (FUNC) ──
+      function renderFuncTurno() {
+        const div = document.getElementById("fpage-turno");
+        if (!div) return;
+        if (T && T.status === "aberto") {
+          renderTurnoAtivo(div);
+        } else {
+          renderTurnoConfig(div);
+        }
+      }
+
+      function renderTurnoConfig(div) {
+        const today = new Date().toISOString().slice(0, 10);
+        div.innerHTML = `
+  <div class="card">
+    <div class="card-title">Novo turno</div>
+    <div class="field"><label>Data</label><input type="date" id="inp-data" value="${today}"></div>
+    <div class="field"><label>Período</label>
+      <div class="shift-bar">
+        <div class="shift-btn" onclick="selectShift('Manhã',this)">☀️ Manhã</div>
+        <div class="shift-btn" onclick="selectShift('Tarde',this)">🌤️ Tarde</div>
+        <div class="shift-btn" onclick="selectShift('Noite',this)">🌙 Noite</div>
+      </div>
+    </div>
+    <div class="field"><label>Caixa inicial (R$)</label><input type="number" id="inp-caixa" placeholder=""></div>
+    <button class="btn btn-primary btn-full" onclick="iniciarTurno()">Iniciar turno →</button>
+  </div>
+  <div id="prev-sobras-info"></div>`;
+
+        // Mostrar sobras anteriores se existirem
+        const today2 = document.getElementById("inp-data");
+        if (today2) today2.addEventListener("change", checkPrevSobras);
+      }
+
+      let shiftSel = null;
+      function selectShift(s, el) {
+        shiftSel = s;
+        document
+          .querySelectorAll(".shift-btn")
+          .forEach((b) => b.classList.remove("active"));
+        if (el) el.classList.add("active");
+        checkPrevSobras();
+      }
+
+      function checkPrevSobras() {
+        const data = document.getElementById("inp-data")?.value;
+        const div = document.getElementById("prev-sobras-info");
+        if (!div || !data || !shiftSel) return;
+        const prev = getPrevSobras(data, shiftSel);
+        if (prev) {
+          div.innerHTML = `<div class="alert alert-info" style="font-size:12px">✓ Sobras do turno anterior encontradas — serão carregadas como entrada.</div>`;
+        } else {
+          div.innerHTML = `<div class="alert" style="background:var(--bg3);border-color:var(--border);color:var(--text3);font-size:12px">Nenhum turno anterior encontrado para esta data/período.</div>`;
+        }
+      }
+
+      function iniciarTurno() {
+        const data = document.getElementById("inp-data").value;
+        const caixa =
+          parseFloat(document.getElementById("inp-caixa").value) || 0;
+        if (!data || !shiftSel) {
+          alert("Selecione a data e o período!");
+          return;
+        }
+        T = makeTurno(data, session.user, shiftSel, caixa);
+        S.turnoAtivo = JSON.parse(JSON.stringify(T));
+        saveState();
+        const div = document.getElementById("fpage-turno");
+        if (div) renderTurnoAtivo(div);
+      }
+
+      function renderTurnoAtivo(div) {
+        div.innerHTML = `
+  <div class="card" style="padding:10px 14px;margin-bottom:10px">
+    <div class="row">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--accent)">${T.turno} — ${T.data}</div>
+        <div style="font-size:11px;color:var(--text3)">${T.responsavel}</div>
+      </div>
+      <span class="badge badge-ok">Aberto</span>
+    </div>
+  </div>
+  <div class="prod-tabs" id="prod-tabs">
+    <button class="prod-tab active" onclick="switchProdTab('pastel',this)">Pastel</button>
+    <button class="prod-tab" onclick="switchProdTab('caldo',this)">Caldo</button>
+    <button class="prod-tab" onclick="switchProdTab('bebidas',this)">Bebidas</button>
+    <button class="prod-tab" onclick="switchProdTab('outros',this)">Outros</button>
+  </div>
+  <div id="prod-content"></div>
+  <hr class="divider">
+  <div class="card" id="fechamento-card">
+    <div class="card-title">Fechamento de caixa</div>
+    <table>
+      <thead><tr><th>Forma</th><th>Valor (R$)</th></tr></thead>
+      <tbody>
+        <tr><td>Dinheiro</td><td><input type="number" class="inp" style="width:90px" id="fc-din" placeholder="" oninput="onFcInput()"></td></tr>
+        <tr><td>Pix manual</td><td><input type="number" class="inp" style="width:90px" id="fc-pix" placeholder="" oninput="onFcInput()"></td></tr>
+        <tr><td>Maquininha</td><td><input type="number" class="inp" style="width:90px" id="fc-maq" placeholder="" oninput="onFcInput()"></td></tr>
+        <tr><td>Voucher</td><td><input type="number" class="inp" style="width:90px" id="fc-vou" placeholder="" oninput="onFcInput()"></td></tr>
+        <tr><td>Caixa final (físico)</td><td><input type="number" class="inp" style="width:90px" id="fc-cfim" placeholder="" oninput="onFcInput()"></td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="metric"><div class="metric-label">Arrecadado</div><div class="metric-value green" id="fc-arr" style="font-size:16px">R$ —</div></div>
+      <div class="metric"><div class="metric-label">Esperado</div><div class="metric-value" id="fc-esp" style="font-size:16px">R$ —</div></div>
+    </div>
+    <div id="fc-consumo-box" style="display:none" class="consumo-box">
+      <div class="consumo-label">⚠ Consumo do turno (não entra no caixa)</div>
+      <div id="fc-consumo-detalhe" style="font-size:12px;color:var(--text2)"></div>
+    </div>
+    <div id="fc-status" style="display:none" class="alert" style="margin-top:8px"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="fecharTurno()">Fechar turno ↗</button>
+    <button class="btn btn-full" style="margin-top:6px;color:var(--red)" onclick="cancelarTurno()">Cancelar turno</button>
+  </div>`;
+        switchProdTab("pastel");
+        updateFechamento();
+      }
+
+      function switchProdTab(tab, el) {
+        funcProdTab = tab;
+        document
+          .querySelectorAll(".prod-tab")
+          .forEach((b) => b.classList.remove("active"));
+        if (el) el.classList.add("active");
+        else {
+          document.querySelectorAll(".prod-tab").forEach((b, i) => {
+            b.classList.toggle(
+              "active",
+              ["pastel", "caldo", "bebidas", "outros"][i] === tab,
+            );
+          });
+        }
+        const div = document.getElementById("prod-content");
+        if (!div) return;
+        if (tab === "pastel") renderPastelContent(div);
+        if (tab === "caldo") renderCaldoContent(div);
+        if (tab === "bebidas") renderBebidasContent(div);
+        if (tab === "outros") renderOutrosContent(div);
+      }
+
+      // ─ TABLE BUILDER ─
+      // cols: array of {key, label, special}
+      function buildTable(items, cols, onchange) {
+        const hdrs =
+          cols.map((c) => `<th>${c.label}</th>`).join("") + "<th>Vendeu</th>";
+        const rows = items
+          .map((item, i) => {
+            const vnd = vendeu(item);
+            const cells = cols
+              .map((c) => {
+                const isEnt = c.key === "entrada";
+                const val = item[c.key] != null ? item[c.key] : "";
+                const entClass = isEnt ? " entrada" : "";
+                // Validate sobra > entrada+chegada
+                let errClass = "";
+                if (c.key === "sobra") {
+                  const maxSob = (item.entrada || 0) + (item.chegada || 0);
+                  if (item.sobra != null && item.sobra > maxSob)
+                    errClass = " error";
+                }
+                return `<td><input type="number" min="0" class="inp${entClass}${errClass}" value="${val}" placeholder="" oninput="${onchange}(${i},'${c.key}',this)"></td>`;
+              })
+              .join("");
+            return `<tr>${cells}<td class="td-vnd ${vnd > 0 ? "pos" : "zero"}" id="vnd-${i}-${items === T.pastelComum ? "pc" : items === T.pastelEsp ? "pe" : items === T.caldo ? "ca" : items === T.bebidas ? "be" : "ot"}">${vnd || "—"}</td></tr>`;
+          })
+          .join("");
+        return `<table><thead><tr>${hdrs}</tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      // ─ PASTEL ─
+      function renderPastelContent(div) {
+        const cols = [
+          { key: "entrada", label: "Entrada" },
+          { key: "chegada", label: "Chegada" },
+          { key: "consumo", label: "Consumo" },
+          { key: "sobra", label: "Sobra" },
+        ];
+        // Totals row
+        const pcVnd = T.pastelComum.reduce((s, i) => s + vendeu(i), 0);
+        const peVnd = T.pastelEsp.reduce((s, i) => s + vendeu(i), 0);
+
+        div.innerHTML = `
+  <div class="card">
+    <div class="section-label">Comuns — R$ ${S.precos.pastelComum},00</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th style="min-width:80px">Sabor</th><th>Entrada</th><th>Chegada</th><th>Consumo</th><th>Sobra</th><th>Vendeu</th></tr></thead>
+      <tbody id="tb-pc"></tbody>
+      <tfoot><tr>
+        <td style="font-size:10px;color:var(--text3)">Total</td>
+        <td id="tot-pc-ent" style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pc-ch"  style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pc-con" style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pc-sob" style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pc-vnd" style="font-family:var(--mono);font-size:11px;color:var(--green)"></td>
+      </tfoot>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="section-label">Especiais</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th style="min-width:80px">Sabor</th><th>Entrada</th><th>Chegada</th><th>Consumo</th><th>Sobra</th><th>Vendeu</th></tr></thead>
+      <tbody id="tb-pe"></tbody>
+      <tfoot><tr>
+        <td style="font-size:10px;color:var(--text3)">Total</td>
+        <td id="tot-pe-ent" style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pe-ch"  style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pe-con" style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pe-sob" style="font-family:var(--mono);font-size:11px"></td>
+        <td id="tot-pe-vnd" style="font-family:var(--mono);font-size:11px;color:var(--green)"></td>
+      </tfoot>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="section-label">Casquinhas</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th style="min-width:80px">Produto</th><th>Entrada</th><th>Chegada</th><th>Consumo</th><th>Sobra</th><th>Vendeu</th></tr></thead>
+      <tbody id="tb-cas"></tbody>
+    </table></div>
+  </div>`;
+        buildPCRows();
+        buildPERows();
+        buildCasRows();
+      }
+
+      function buildPCRows() {
+        const tb = document.getElementById("tb-pc");
+        if (!tb) return;
+        tb.innerHTML = T.pastelComum
+          .map((item, i) => mkItemRow(item, i, "upPC", "pc"))
+          .join("");
+        updateTotPC();
+      }
+      function buildPERows() {
+        const tb = document.getElementById("tb-pe");
+        if (!tb) return;
+        tb.innerHTML = T.pastelEsp
+          .map((item, i) => {
+            const pr =
+              item.grp === "carneSeca"
+                ? S.precos.carneSeca
+                : item.grp === "espCarneSeca"
+                  ? S.precos.espCarneSeca
+                  : S.precos.espComum;
+            return mkItemRow(item, i, "upPE", "pe", `R$${pr}`);
+          })
+          .join("");
+        updateTotPE();
+      }
+      function buildCasRows() {
+        const tb = document.getElementById("tb-cas");
+        if (!tb) return;
+        tb.innerHTML = T.casquinha
+          .map((item, i) =>
+            mkItemRow(
+              item,
+              i,
+              "upCas",
+              "cas",
+              item.preco > 0 ? `R$${item.preco}` : "grátis",
+            ),
+          )
+          .join("");
+      }
+
+      function mkItemRow(item, i, fn, pfx, prLabel = "") {
+        const vnd = vendeu(item);
+        const maxSob = (item.entrada || 0) + (item.chegada || 0);
+        const sobErr =
+          item.sobra != null && item.sobra > maxSob ? " error" : "";
+        const sobConsErr =
+          item.sobra != null &&
+          item.consumo != null &&
+          item.sobra + item.consumo > maxSob
+            ? " error"
+            : "";
+        return `<tr>
+    <td class="td-nome" title="${item.nome}">${item.nome}${prLabel ? `<span style="font-size:9px;color:var(--text3);margin-left:3px">${prLabel}</span>` : ""}</td>
+    <td><input type="number" min="0" class="inp entrada" value="${item.entrada != null ? item.entrada : ""}" placeholder="" oninput="${fn}(${i},'entrada',this)"></td>
+    <td><input type="number" min="0" class="inp" value="${item.chegada != null ? item.chegada : ""}" placeholder="" oninput="${fn}(${i},'chegada',this)"></td>
+    <td><input type="number" min="0" class="inp" value="${item.consumo != null ? item.consumo : ""}" placeholder="" oninput="${fn}(${i},'consumo',this)"></td>
+    <td><input type="number" min="0" class="inp${sobErr}" value="${item.sobra != null ? item.sobra : ""}" placeholder="" oninput="${fn}(${i},'sobra',this)"></td>
+    <td class="td-vnd ${vnd > 0 ? "pos" : "zero"}" id="vr-${pfx}-${i}">${vnd || "—"}</td>
+  </tr>`;
+      }
+
+      function upPC(i, key, el) {
+        T.pastelComum[i][key] = el.value === "" ? null : +el.value;
+        validateSobra(el, T.pastelComum[i]);
+        const vnd = vendeu(T.pastelComum[i]);
+        const vEl = document.getElementById(`vr-pc-${i}`);
+        if (vEl) {
+          vEl.textContent = vnd || "—";
+          vEl.className = `td-vnd ${vnd > 0 ? "pos" : "zero"}`;
+        }
+        updateTotPC();
+        autoSave();
+        updateFechamento();
+      }
+      function upPE(i, key, el) {
+        T.pastelEsp[i][key] = el.value === "" ? null : +el.value;
+        validateSobra(el, T.pastelEsp[i]);
+        const vnd = vendeu(T.pastelEsp[i]);
+        const vEl = document.getElementById(`vr-pe-${i}`);
+        if (vEl) {
+          vEl.textContent = vnd || "—";
+          vEl.className = `td-vnd ${vnd > 0 ? "pos" : "zero"}`;
+        }
+        updateTotPE();
+        autoSave();
+        updateFechamento();
+      }
+      function upCas(i, key, el) {
+        T.casquinha[i][key] = el.value === "" ? null : +el.value;
+        validateSobra(el, T.casquinha[i]);
+        const vnd = vendeu(T.casquinha[i]);
+        const vEl = document.getElementById(`vr-cas-${i}`);
+        if (vEl) {
+          vEl.textContent = vnd || "—";
+          vEl.className = `td-vnd ${vnd > 0 ? "pos" : "zero"}`;
+        }
+        autoSave();
+        updateFechamento();
+      }
+
+      function validateSobra(el, item) {
+        if (el.className.includes("sobra") || item.sobra != null) {
+          const max = (item.entrada || 0) + (item.chegada || 0);
+          // find sobra input in same row
+          const row = el.closest("tr");
+          if (row) {
+            const inps = row.querySelectorAll("input");
+            inps.forEach((inp) => {
+              if (inp !== el && inp.className.includes("entrada")) return;
+              // check if it's the sobra column (4th input)
+            });
+          }
+        }
+        // Simple: if this is sobra input, check
+        const max = (item.entrada || 0) + (item.chegada || 0);
+        if (item.sobra != null && item.sobra > max) {
+          el.classList.add("error");
+        } else {
+          el.classList.remove("error");
+        }
+      }
+
+      function updateTotPC() {
+        const cols = ["entrada", "chegada", "consumo", "sobra"];
+        cols.forEach((c) => {
+          const el = document.getElementById(`tot-pc-${c.slice(0, 3)}`);
+          if (el) {
+            const v = T.pastelComum.reduce((s, i) => s + (i[c] || 0), 0);
+            el.textContent = v || "";
+          }
+        });
+        const vEl = document.getElementById("tot-pc-vnd");
+        if (vEl) {
+          const v = T.pastelComum.reduce((s, i) => s + vendeu(i), 0);
+          vEl.textContent = v || "";
+        }
+      }
+      function updateTotPE() {
+        const cols = ["entrada", "chegada", "consumo", "sobra"];
+        cols.forEach((c) => {
+          const el = document.getElementById(`tot-pe-${c.slice(0, 3)}`);
+          if (el) {
+            const v = T.pastelEsp.reduce((s, i) => s + (i[c] || 0), 0);
+            el.textContent = v || "";
+          }
+        });
+        const vEl = document.getElementById("tot-pe-vnd");
+        if (vEl) {
+          const v = T.pastelEsp.reduce((s, i) => s + vendeu(i), 0);
+          vEl.textContent = v || "";
+        }
+      }
+
+      // ─ CALDO ─
+      function renderCaldoContent(div) {
+        div.innerHTML = `
+  <div class="card">
+    <div class="section-label">Caldo de cana</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th style="min-width:80px">Produto</th><th>Entrada</th><th>Chegada</th><th>Consumo</th><th>Sobra</th><th>Vendeu</th></tr></thead>
+      <tbody id="tb-caldo"></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="section-label">Fardo de cana <span style="font-size:10px;color:var(--text3)">(sem consumo)</span></div>
+    <table>
+      <thead><tr><th>Entrada</th><th>Chegada</th><th>Sobra</th><th>Situação</th></tr></thead>
+      <tbody id="tb-fardo"></tbody>
+    </table>
+  </div>`;
+        buildCaldoRows();
+        buildFardoRow();
+      }
+      function buildCaldoRows() {
+        const tb = document.getElementById("tb-caldo");
+        if (!tb) return;
+        tb.innerHTML = T.caldo
+          .map((item, i) => {
+            const pr = S.precos[item.pk];
+            return mkItemRow(item, i, "upCaldo", "ca", `R$${pr}`);
+          })
+          .join("");
+      }
+      function buildFardoRow() {
+        const tb = document.getElementById("tb-fardo");
+        if (!tb) return;
+        const f = T.fardo;
+        const maxSob = (f.entrada || 0) + (f.chegada || 0);
+        const sob = f.sobra || 0;
+        const low = sob <= 2 && (f.entrada || 0) > 0;
+        const errClass = f.sobra != null && f.sobra > maxSob ? " error" : "";
+        tb.innerHTML = `<tr>
+    <td><input type="number" min="0" class="inp entrada" value="${f.entrada != null ? f.entrada : ""}" placeholder="" oninput="upFardo('entrada',this)"></td>
+    <td><input type="number" min="0" class="inp" value="${f.chegada != null ? f.chegada : ""}" placeholder="" oninput="upFardo('chegada',this)"></td>
+    <td><input type="number" min="0" class="inp${errClass}" value="${f.sobra != null ? f.sobra : ""}" placeholder="" oninput="upFardo('sobra',this)"></td>
+    <td>${low ? '<span class="badge badge-warn">⚠ Baixo</span>' : '<span class="badge badge-ok">OK</span>'}</td>
+  </tr>`;
+      }
+      function upCaldo(i, key, el) {
+        T.caldo[i][key] = el.value === "" ? null : +el.value;
+        validateSobra(el, T.caldo[i]);
+        const vnd = vendeu(T.caldo[i]);
+        const vEl = document.getElementById(`vr-ca-${i}`);
+        if (vEl) {
+          vEl.textContent = vnd || "—";
+          vEl.className = `td-vnd ${vnd > 0 ? "pos" : "zero"}`;
+        }
+        autoSave();
+        updateFechamento();
+      }
+      function upFardo(key, el) {
+        T.fardo[key] = el.value === "" ? null : +el.value;
+        if (key === "sobra") {
+          const max = (T.fardo.entrada || 0) + (T.fardo.chegada || 0);
+          el.className = `inp${T.fardo.sobra > max ? " error" : ""}`;
+        }
+        buildFardoRow();
+        autoSave();
+      }
+
+      // ─ BEBIDAS ─
+      function renderBebidasContent(div) {
+        div.innerHTML = `
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <div class="section-label" style="margin:0">Bebidas</div>
+      <button class="btn btn-sm" onclick="toggleAddBebTurno()">+ Bebida</button>
+    </div>
+    <div id="add-beb-turno" style="display:none;margin-bottom:10px;background:var(--bg3);border-radius:6px;padding:10px">
+      <div class="flex">
+        <input type="text" id="nbt-nome" placeholder="Nome" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px">
+        <input type="number" id="nbt-preco" placeholder="R$" style="width:60px;padding:6px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px">
+        <button class="btn btn-sm btn-primary" onclick="addBebTurno()">+</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th style="min-width:70px">Produto</th><th>Entrada</th><th>Chegada</th><th>Consumo</th><th>Sobra</th><th>Vendeu</th></tr></thead>
+      <tbody id="tb-beb"></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="section-label">Gelo — R$ ${S.precos.gelo},00</div>
+    <table>
+      <thead><tr><th>Entrada</th><th>Chegada</th><th>Consumo</th><th>Sobra</th><th>Vendeu</th></tr></thead>
+      <tbody id="tb-gelo"></tbody>
+    </table>
+  </div>`;
+        buildBebRows2();
+        buildGeloRow2();
+      }
+      function buildBebRows2() {
+        const tb = document.getElementById("tb-beb");
+        if (!tb) return;
+        const low3 = (item) =>
+          (item.sobra || 0) <= 3 && (item.entrada || 0) > 0;
+        tb.innerHTML = T.bebidas
+          .map((item, i) => {
+            const vnd = vendeu(item);
+            const maxSob = (item.entrada || 0) + (item.chegada || 0);
+            const sobErr =
+              item.sobra != null && item.sobra > maxSob ? " error" : "";
+            const lowWarn = low3(item)
+              ? '<span class="badge badge-warn" style="font-size:9px;margin-left:2px">⚠</span>'
+              : "";
+            return `<tr>
+      <td class="td-nome" title="${item.nome}">${item.nome}${lowWarn}<span style="font-size:9px;color:var(--text3);display:block">R$${item.preco}</span></td>
+      <td><input type="number" min="0" class="inp entrada" value="${item.entrada != null ? item.entrada : ""}" placeholder="" oninput="upBeb(${i},'entrada',this)"></td>
+      <td><input type="number" min="0" class="inp" value="${item.chegada != null ? item.chegada : ""}" placeholder="" oninput="upBeb(${i},'chegada',this)"></td>
+      <td><input type="number" min="0" class="inp" value="${item.consumo != null ? item.consumo : ""}" placeholder="" oninput="upBeb(${i},'consumo',this)"></td>
+      <td><input type="number" min="0" class="inp${sobErr}" value="${item.sobra != null ? item.sobra : ""}" placeholder="" oninput="upBeb(${i},'sobra',this)"></td>
+      <td class="td-vnd ${vnd > 0 ? "pos" : "zero"}" id="vr-be-${i}">${vnd || "—"}</td>
+    </tr>`;
+          })
+          .join("");
+      }
+      function buildGeloRow2() {
+        const tb = document.getElementById("tb-gelo");
+        if (!tb) return;
+        const g = T.gelo;
+        const maxSob = (g.entrada || 0) + (g.chegada || 0);
+        const sob = Math.max(
+          0,
+          maxSob - (g.consumo || 0) - (g.sobra != null ? g.sobra : 0),
+        );
+        // gelo: vendeu = entrada+chegada - sobra - consumo
+        const vnd = Math.max(
+          0,
+          (g.entrada || 0) +
+            (g.chegada || 0) -
+            (g.sobra || 0) -
+            (g.consumo || 0),
+        );
+        const sobErr = g.sobra != null && g.sobra > maxSob ? " error" : "";
+        tb.innerHTML = `<tr>
+    <td><input type="number" min="0" class="inp entrada" value="${g.entrada != null ? g.entrada : ""}" placeholder="" oninput="upGelo('entrada',this)"></td>
+    <td><input type="number" min="0" class="inp" value="${g.chegada != null ? g.chegada : ""}" placeholder="" oninput="upGelo('chegada',this)"></td>
+    <td><input type="number" min="0" class="inp" value="${g.consumo != null ? g.consumo : ""}" placeholder="" oninput="upGelo('consumo',this)"></td>
+    <td><input type="number" min="0" class="inp${sobErr}" value="${g.sobra != null ? g.sobra : ""}" placeholder="" oninput="upGelo('sobra',this)"></td>
+    <td class="td-vnd ${vnd > 0 ? "pos" : "zero"}" id="vr-gelo">${vnd || "—"}</td>
+  </tr>`;
+      }
+      function upBeb(i, key, el) {
+        T.bebidas[i][key] = el.value === "" ? null : +el.value;
+        validateSobra(el, T.bebidas[i]);
+        const vnd = vendeu(T.bebidas[i]);
+        const vEl = document.getElementById(`vr-be-${i}`);
+        if (vEl) {
+          vEl.textContent = vnd || "—";
+          vEl.className = `td-vnd ${vnd > 0 ? "pos" : "zero"}`;
+        }
+        autoSave();
+        updateFechamento();
+      }
+      function upGelo(key, el) {
+        T.gelo[key] = el.value === "" ? null : +el.value;
+        if (key === "sobra") {
+          const max = (T.gelo.entrada || 0) + (T.gelo.chegada || 0);
+          el.className = `inp${T.gelo.sobra > max ? " error" : ""}`;
+        }
+        const vnd = Math.max(
+          0,
+          (T.gelo.entrada || 0) +
+            (T.gelo.chegada || 0) -
+            (T.gelo.sobra || 0) -
+            (T.gelo.consumo || 0),
+        );
+        const vEl = document.getElementById("vr-gelo");
+        if (vEl) {
+          vEl.textContent = vnd || "—";
+          vEl.className = `td-vnd ${vnd > 0 ? "pos" : "zero"}`;
+        }
+        autoSave();
+        updateFechamento();
+      }
+      function toggleAddBebTurno() {
+        const f = document.getElementById("add-beb-turno");
+        if (f) f.style.display = f.style.display === "none" ? "" : "none";
+      }
+      function addBebTurno() {
+        const nome = document.getElementById("nbt-nome").value.trim();
+        const preco =
+          parseFloat(document.getElementById("nbt-preco").value) || 7;
+        if (!nome) return;
+        const newBeb = { id: uid(), nome, preco };
+        S.bebidas.push(newBeb);
+        T.bebidas.push(makeItem(nome, 0, { preco, bebidasId: newBeb.id }));
+        saveState();
+        autoSave();
+        document.getElementById("nbt-nome").value = "";
+        document.getElementById("nbt-preco").value = "";
+        buildBebRows2();
+      }
+
+      // ─ OUTROS ─
+      function renderOutrosContent(div) {
+        const g = T.gas;
+        div.innerHTML = `
+  <div class="card">
+    <div class="section-label">Botijão de gás</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+      <div class="field" style="margin:0"><label>Início (%)</label>
+        <input type="number" min="0" max="100" class="inp" style="width:80px" value="${g.ini != null ? g.ini : ""}" placeholder="" oninput="T.gelo;T.gas.ini=this.value===''?null:+this.value;checkGas()">
+      </div>
+      <div class="field" style="margin:0"><label>Fim (%)</label>
+        <input type="number" min="0" max="100" class="inp" style="width:80px" value="${g.fim != null ? g.fim : ""}" placeholder="" oninput="T.gas.fim=this.value===''?null:+this.value;checkGas()">
+      </div>
+    </div>
+    <div id="gas-status" style="margin-top:10px"></div>
+  </div>`;
+        checkGas();
+      }
+      function checkGas() {
+        const div = document.getElementById("gas-status");
+        if (!div) return;
+        if (T.gas.fim != null && T.gas.fim < 20)
+          div.innerHTML =
+            '<span class="badge badge-warn">⚠ Gás baixo — avisar dono!</span>';
+        else if (T.gas.fim != null)
+          div.innerHTML = '<span class="badge badge-ok">OK</span>';
+        else div.innerHTML = "";
+        autoSave();
+      }
+
+      // ─ FECHAMENTO ─
+      function onFcInput() {
+        T.fc.dinheiro =
+          parseFloat(document.getElementById("fc-din")?.value) || 0;
+        T.fc.pix = parseFloat(document.getElementById("fc-pix")?.value) || 0;
+        T.fc.maq = parseFloat(document.getElementById("fc-maq")?.value) || 0;
+        T.fc.voucher =
+          parseFloat(document.getElementById("fc-vou")?.value) || 0;
+        T.fc.caixaFim =
+          parseFloat(document.getElementById("fc-cfim")?.value) || 0;
+        updateFechamento();
+        autoSave();
+      }
+
+      function updateFechamento() {
+        const arr =
+          (T.fc.dinheiro || 0) +
+          (T.fc.pix || 0) +
+          (T.fc.maq || 0) +
+          (T.fc.voucher || 0);
+        const esp = calcEsperado(T);
+        const consumoV = calcConsumoValor(T);
+        const diff = arr - esp;
+
+        const arrEl = document.getElementById("fc-arr");
+        const espEl = document.getElementById("fc-esp");
+        const stEl = document.getElementById("fc-status");
+        const cxEl = document.getElementById("fc-consumo-box");
+        const cdEl = document.getElementById("fc-consumo-detalhe");
+
+        if (arrEl) arrEl.textContent = fmt(arr);
+        if (espEl) espEl.textContent = fmt(esp);
+
+        // Consumo box
+        if (cxEl && cdEl) {
+          if (consumoV > 0) {
+            cxEl.style.display = "";
+            // Build consumo detail
+            const items = [];
+            [...T.pastelComum, ...T.pastelEsp, ...T.casquinha].forEach((i) => {
+              if (i.consumo > 0) items.push(`${i.consumo}x ${i.nome}`);
+            });
+            T.caldo.forEach((i) => {
+              if (i.consumo > 0) items.push(`${i.consumo}x ${i.nome}`);
+            });
+            T.bebidas.forEach((i) => {
+              if (i.consumo > 0) items.push(`${i.consumo}x ${i.nome}`);
+            });
+            if (T.gelo.consumo > 0) items.push(`${T.gelo.consumo}x Gelo`);
+            cdEl.innerHTML =
+              items.join(", ") +
+              `<br><strong style="color:var(--amber)">Desconto total: ${fmt(consumoV)}</strong> <span style="color:var(--text3);font-size:11px">(será abatido no pagamento)</span>`;
+          } else {
+            cxEl.style.display = "none";
+          }
+        }
+
+        if (stEl && (arr > 0 || esp > 0)) {
+          stEl.style.display = "";
+          if (Math.abs(diff) < 0.5) {
+            stEl.className = "alert alert-ok";
+            stEl.textContent = "✓ Caixa conferido!";
+          } else if (diff > 0) {
+            stEl.className = "alert alert-warn";
+            stEl.textContent = `Sobra ${fmt(diff)} — verificar.`;
+          } else {
+            stEl.className = "alert alert-err";
+            stEl.textContent = `⚠ Faltam ${fmt(Math.abs(diff))} — revisar lançamentos.`;
+          }
+        }
+      }
+
+      function autoSave() {
+        S.turnoAtivo = JSON.parse(JSON.stringify(T));
+        saveState();
+      }
+
+      function fecharTurno() {
+        if (!T) {
+          alert("Nenhum turno aberto!");
+          return;
+        }
+        const esp = calcEsperado(T);
+        const arr =
+          (T.fc.dinheiro || 0) +
+          (T.fc.pix || 0) +
+          (T.fc.maq || 0) +
+          (T.fc.voucher || 0);
+        const consumoV = calcConsumoValor(T);
+        T.status = "fechado";
+        T.totalEsperado = esp;
+        T.totalArrecadado = arr;
+        T.totalConsumo = consumoV;
+        T.fechadoEm = new Date().toISOString();
+        const idx = S.historico.findIndex(
+          (h) => h.data === T.data && h.turno === T.turno,
+        );
+        if (idx >= 0) S.historico.splice(idx, 1, JSON.parse(JSON.stringify(T)));
+        else S.historico.push(JSON.parse(JSON.stringify(T)));
+        S.turnoAtivo = null;
+        saveState();
+        alert(
+          `Turno fechado!\nArrecadado: ${fmt(arr)}\nEsperado: ${fmt(esp)}\nConsumo: ${fmt(consumoV)} (abatido no pagamento)`,
+        );
+        T = null;
+        shiftSel = null;
+        const div = document.getElementById("fpage-turno");
+        if (div) renderTurnoConfig(div);
+      }
+
+      function cancelarTurno() {
+        if (!confirm("Cancelar turno? Os dados serão perdidos.")) return;
+        T = null;
+        S.turnoAtivo = null;
+        saveState();
+        const div = document.getElementById("fpage-turno");
+        if (div) renderTurnoConfig(div);
+      }
+
+      // ── PONTO (FUNC) ──
+      let consumoTempPonto = {};
+
+      function renderFuncPonto() {
+        const div = document.getElementById("fpage-ponto");
+        if (!div) return;
+        const today = new Date().toISOString().slice(0, 10);
+        // Check if already has ponto today
+        const pontosHoje = (S.pontos || []).filter(
+          (p) => p.funcId === session.funcId && p.data === today,
+        );
+
+        div.innerHTML = `
+  <div class="card">
+    <div class="card-title">Registrar ponto</div>
+    <div class="field"><label>Data</label><input type="date" id="pt-data" value="${today}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field" style="margin:0"><label>Entrada</label><input type="time" id="pt-entrada"></div>
+      <div class="field" style="margin:0"><label>Saída</label><input type="time" id="pt-saida"></div>
+      <div class="field" style="margin:0"><label>Transp. ida (R$)</label><input type="number" id="pt-tida" placeholder=""></div>
+      <div class="field" style="margin:0"><label>Transp. volta (R$)</label><input type="number" id="pt-tvolta" placeholder=""></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>Refeição (R$)</label><input type="number" id="pt-ref" value="15" placeholder="15"></div>
+    <div class="field">
+      <label>Meu consumo no turno</label>
+      <button class="btn btn-sm" onclick="openConsumoPontoModal()" style="margin-top:4px">Registrar consumo ↗</button>
+      <div id="consumo-ponto-resumo" style="font-size:12px;color:var(--text3);margin-top:6px">Nenhum consumo registrado.</div>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="salvarPonto()">Salvar ponto</button>
+  </div>
+  ${
+    pontosHoje.length > 0
+      ? `
+  <div class="card">
+    <div class="card-title">Meus pontos de hoje</div>
+    ${pontosHoje
+      .map(
+        (p) => `<div class="ponto-row">
+      <div style="font-size:13px;font-weight:500">${p.entrada} → ${p.saida} <span style="font-size:11px;color:var(--text3)">${p.hs}h</span></div>
+      <div style="font-size:11px;color:var(--text3)">Transp: R$${p.transIda + p.transVolta} · Ref: R$${p.refeicao}</div>
+    </div>`,
+      )
+      .join("")}
+  </div>`
+      : ""
+  }`;
+        renderConsumoPontoResumo();
+      }
+
+      function openConsumoPontoModal() {
+        const p = S.precos;
+        const prods = [
+          ...S.bebidas
+            .filter(
+              (b) =>
+                !b.nome.toLowerCase().includes("água") ||
+                b.nome.toLowerCase().includes("gás"),
+            )
+            .map((b) => ({ nome: b.nome, preco: b.preco })),
+          { nome: "Água", preco: 0, gratis: true },
+          { nome: "Pastel comum", preco: p.pastelComum },
+          { nome: "Carne Seca", preco: p.carneSeca },
+          { nome: "Esp. Carne/Calabresa/Frango", preco: p.espComum },
+          { nome: "Esp. Carne Seca", preco: p.espCarneSeca },
+          { nome: "Casquinha frita", preco: p.casquinhaFrita },
+          { nome: "Copo 300ml", preco: p.c300 },
+          { nome: "Copo 400ml", preco: p.c400 },
+          { nome: "Copo 500ml", preco: p.c500 },
+          { nome: "Garrafa 500ml", preco: p.g500 },
+          { nome: "Garrafa 1L", preco: p.g1l },
+        ];
+        const existing = document.getElementById("consumo-modal");
+        if (existing) existing.remove();
+        const overlay = document.createElement("div");
+        overlay.id = "consumo-modal";
+        overlay.className = "modal-overlay";
+        overlay.innerHTML = `<div class="modal-box">
+    <div class="row" style="margin-bottom:14px">
+      <h3 style="font-size:15px">Meu consumo</h3>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('consumo-modal').remove()">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Apenas você vê o que consumiu. O desconto é 50% do preço (Água: grátis).</p>
+    <table>
+      <thead><tr><th>Produto</th><th>Preço</th><th>Desc.</th><th>Qtd</th></tr></thead>
+      <tbody>
+        ${prods
+          .map((pr, i) => {
+            const k = pr.nome;
+            const qtd = consumoTempPonto[k]?.qtd || 0;
+            const desc = pr.gratis
+              ? "Grátis"
+              : `R$${(pr.preco / 2).toFixed(2)}`;
+            return `<tr>
+            <td style="font-size:12px">${pr.nome}</td>
+            <td style="font-size:11px;color:var(--text3)">${pr.gratis ? "—" : "R$" + pr.preco}</td>
+            <td style="font-size:11px;color:var(--amber)">${desc}</td>
+            <td><input type="number" min="0" class="inp" value="${qtd}" placeholder="" oninput="upConsumoPonto('${k}',${pr.preco},${pr.gratis ? true : false},this.value)"></td>
+          </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+    <div id="consumo-modal-total" style="margin-top:10px;font-size:13px;font-weight:600;color:var(--amber)"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="document.getElementById('consumo-modal').remove();renderConsumoPontoResumo()">Confirmar</button>
+  </div>`;
+        document.body.appendChild(overlay);
+        calcConsumoPontoTotal();
+      }
+
+      function upConsumoPonto(nome, preco, gratis, val) {
+        const qtd = parseInt(val) || 0;
+        if (qtd <= 0) {
+          delete consumoTempPonto[nome];
+        } else {
+          consumoTempPonto[nome] = {
+            nome,
+            preco,
+            qtd,
+            desconto: gratis ? 0 : qtd * (preco / 2),
+          };
+        }
+        calcConsumoPontoTotal();
+      }
+      function calcConsumoPontoTotal() {
+        const total = Object.values(consumoTempPonto).reduce(
+          (s, c) => s + c.desconto,
+          0,
+        );
+        const el = document.getElementById("consumo-modal-total");
+        if (el)
+          el.textContent = total > 0 ? `Total a descontar: ${fmt(total)}` : "";
+      }
+      function renderConsumoPontoResumo() {
+        const div = document.getElementById("consumo-ponto-resumo");
+        if (!div) return;
+        const itens = Object.values(consumoTempPonto);
+        if (!itens.length) {
+          div.textContent = "Nenhum consumo registrado.";
+          return;
+        }
+        const total = itens.reduce((s, c) => s + c.desconto, 0);
+        div.innerHTML =
+          itens.map((c) => `${c.qtd}x ${c.nome}`).join(", ") +
+          `<br><strong style="color:var(--amber)">Desconto: ${fmt(total)}</strong>`;
+      }
+
+      function calcHoras(e, s) {
+        if (!e || !s) return 0;
+        const [eh, em] = e.split(":").map(Number);
+        const [sh, sm] = s.split(":").map(Number);
+        let m = sh * 60 + sm - (eh * 60 + em);
+        if (m < 0) m += 24 * 60;
+        return parseFloat((m / 60).toFixed(2));
+      }
+
+      function salvarPonto() {
+        const data = document.getElementById("pt-data").value;
+        const entrada = document.getElementById("pt-entrada").value;
+        const saida = document.getElementById("pt-saida").value;
+        if (!data || !entrada || !saida) {
+          alert("Preencha data, entrada e saída!");
+          return;
+        }
+        const hs = calcHoras(entrada, saida);
+        const consumoTotal = Object.values(consumoTempPonto).reduce(
+          (s, c) => s + c.desconto,
+          0,
+        );
+        const ponto = {
+          id: uid(),
+          funcId: session.funcId,
+          nome: session.user,
+          data,
+          semana: getMondayOf(data),
+          entrada,
+          saida,
+          hs,
+          transIda: parseFloat(document.getElementById("pt-tida").value) || 0,
+          transVolta:
+            parseFloat(document.getElementById("pt-tvolta").value) || 0,
+          refeicao: parseFloat(document.getElementById("pt-ref").value) || 15,
+          consumo: consumoTotal,
+          consumoItens: { ...consumoTempPonto },
+          registradoEm: new Date().toISOString(),
+        };
+        if (!S.pontos) S.pontos = [];
+        S.pontos.push(ponto);
+        consumoTempPonto = {};
+        saveState();
+        alert(
+          `Ponto salvo!\n${hs}h trabalhadas\nConsumo: ${fmt(consumoTotal)}`,
+        );
+        renderFuncPonto();
+      }
+
+      function getMondayOf(dateStr) {
+        const d = new Date(dateStr + "T12:00:00");
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setDate(d.getDate() + diff);
+        return d.toISOString().slice(0, 10);
+      }
+
+      // ═══════════════════════════════════════════════════
+      // BOOT
+      // ═══════════════════════════════════════════════════
+      renderLogin();
+    </script>
+  </body>
+</html>
